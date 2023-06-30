@@ -1,6 +1,7 @@
 const { BASE_DIRECTORY } = require("../constants");
 const uploadFile = require("../middleware/upload");
 const fs = require("fs");
+const crypto = require("crypto");
 
 const getListFiles = (req, res) => {
   //GET: request to get all directorys
@@ -26,16 +27,23 @@ const _fnReadDirRecursive = (sPath) => {
   let aContent = fs.readdirSync(sPath, {
     withFileTypes: true,
   });
+  let oStat = fs.lstatSync(sPath);
+  console.log(oStat.birthtime);
   let iNumFiles = aContent.length;
-  aContent.forEach((oFile, index) => {
+  aContent.forEach((oFile) => {
     let isDirectory = oFile.isDirectory();
     let aNodes = {};
     if (isDirectory) {
-      aNodes = _fnReadDirRecursive(`${sPath}/${oFile.name}`);
+      let path = `${sPath}/${oFile.name}`;
+      aNodes = _fnReadDirRecursive(path);
+      path = path.replace(BASE_DIRECTORY, "");
       aFiles.push({
         name: oFile.name,
         isDirectory: isDirectory,
         nodes: aNodes,
+        path: path,
+        // id: crypto.randomUUID(),
+        id: path,
       });
     }
   });
